@@ -28,8 +28,9 @@ All'inizio, durante e alla chiusura di ogni sessione:
 2. **Durante la sessione**: aggiornare `CLAUDE.md` del progetto ad ogni avanzamento importante
 3. **Chiusura sessione**: quando l'utente dice "salva tutto" o simile, eseguire OBBLIGATORIAMENTE:
    - Aggiornare `CLAUDE.md` del progetto con: stato attuale, blocchi completati, prossimi step, decisioni prese, stack usato
-   - Commit + push su GitHub
-   - Confermare esplicitamente all'utente: "✓ CLAUDE.md aggiornato, ✓ push su GitHub completato"
+   - Commit + push sulla repo del progetto su GitHub
+   - Copiare il `CLAUDE.md` aggiornato in `C:/Users/aseee/Desktop/Claude-BackUP/projects/<nome-progetto>/CLAUDE.md` e fare commit + push su `AlessioSerreli/Claude-BackUP`
+   - Confermare esplicitamente all'utente: "✓ CLAUDE.md aggiornato, ✓ push su GitHub completato, ✓ backup su Claude-BackUP"
 
 Il `CLAUDE.md` di progetto deve contenere:
 - Descrizione del progetto e obiettivo
