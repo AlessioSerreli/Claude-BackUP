@@ -48,6 +48,146 @@ MVP Fase 1: Survey dinamica + Scorecard AI generata + CRM admin.
 - Workflow: `luigi/feature` o `alessio/feature` → PR → `develop` → `main`
 - Luigi: backend (FastAPI) | Alessio: frontend (Next.js)
 
+## Onboarding Luigi — Benvenuto nel progetto
+
+Ciao Luigi! Questo documento ti racconta tutto quello che è stato fatto e come funziona il progetto.
+
+### Cos'è il progetto
+Una piattaforma web che aiuta le piccole imprese italiane (<50 dipendenti) a capire come l'AI può migliorare il loro lavoro. Il flusso è:
+1. L'imprenditore arriva sulla **landing page**
+2. Compila una **survey** di 15 domande sulla sua azienda
+3. Riceve via email una **scorecard** generata dall'AI con un punteggio e 3 azioni concrete
+4. Noi lo contattiamo per una **call gratuita** → diventa cliente
+
+### I blocchi del progetto (cosa è già fatto)
+
+**BLOCCO 0 — Foundation** ✅
+Struttura del progetto creata da zero: cartelle, file di configurazione, design system (colori, font, componenti base). Non devi toccare nulla qui.
+
+**BLOCCO 1 — Survey Engine** ✅
+La survey dinamica con 15 domande e logica condizionale (alcune domande appaiono solo in base alle risposte precedenti). Ha una progress bar e invia i dati al backend.
+- File chiave: `frontend/app/survey/page.tsx`
+
+**BLOCCO 2 — AI Scorecard Generator** ✅
+Il backend riceve i dati della survey, li manda a Claude AI (Anthropic), che genera un punteggio da 0 a 100 e 3 "quick win" personalizzati. Il risultato viene salvato su Supabase e inviato via email.
+- File chiave: `backend/ai/scoring.py`, `backend/routes/survey.py`
+
+**BLOCCO 3 — Sales Infrastructure** ✅
+La landing page (homepage) e la pagina di ringraziamento dopo la survey.
+- File chiave: `frontend/app/page.tsx`, `frontend/app/thank-you/page.tsx`
+
+**BLOCCO 3b — CRM Admin** ✅
+Dashboard di amministrazione per vedere tutti i lead, il loro stato e i clienti attivi. Solo per uso interno nostro.
+- File chiave: `frontend/app/admin/page.tsx`, `frontend/app/admin/leads/page.tsx`
+
+**BLOCCO 4 — Core AI Engine** ⏳ (post-MVP, non ancora iniziato)
+Espansione delle funzionalità AI. Si farà dopo il lancio.
+
+### Architettura in 30 secondi
+```
+[Utente] → [Frontend Next.js :3000] → [Backend FastAPI :8000] → [Supabase DB]
+                                              ↓
+                                    [Claude AI (Anthropic)]
+                                              ↓
+                                    [Email via Resend]
+```
+
+### Il tuo ruolo
+**Tu gestisci il Frontend** — tutto quello che è in `frontend/`. Alessio gestisce il backend in `backend/`. Non dovrai toccare il backend salvo accordi.
+
+### Prima di iniziare a lavorare
+Chiedi ad Alessio il file `backend/.env` con le chiavi API (non è nel repo per sicurezza). Ti servirà solo se vuoi avviare il backend in locale per testare. Per il frontend puoi lavorare autonomamente.
+
+---
+
+## Workflow di collaborazione (Alessio + Luigi)
+
+### Ruoli
+- **Alessio** → Backend (FastAPI, endpoint, logica AI, database)
+- **Luigi** → Frontend (Next.js, pagine, componenti, UI)
+
+### Struttura branch
+```
+main       ← produzione, protetto (solo merge via PR approvata)
+develop    ← branch di integrazione, da cui si parte sempre
+alessio/   ← branch di Alessio (es. alessio/landing-fix)
+luigi/     ← branch di Luigi (es. luigi/crm-endpoint)
+```
+
+### Regole di lavoro
+1. **Mai lavorare direttamente su `main`** — è protetto e richiede PR
+2. **Ogni sessione inizia così**:
+   ```
+   git checkout develop
+   git pull origin develop
+   git checkout -b alessio/nome-feature   (o luigi/nome-feature)
+   ```
+3. **Finita la feature**, si apre una PR verso `develop`:
+   ```
+   git push origin alessio/nome-feature
+   ```
+   Poi su GitHub: "Compare & pull request" → assegnare l'altro come reviewer
+4. **L'altro approva** la PR → merge su `develop`
+5. **Quando il codice è stabile** e testato su `develop` → PR verso `main`
+
+### Regole pratiche
+- Commit frequenti con messaggi chiari (imperativo: "add", "fix", "update")
+- Fare `git pull origin develop` prima di iniziare ogni sessione
+- Non modificare mai file dell'area dell'altro senza avvisare
+- Se c'è un conflitto, risolverlo insieme — non fare mai force push
+
+---
+
+## Cheatsheet Git — Comandi sessione
+
+### ALESSIO (Backend — cartella `backend/`)
+
+```bash
+# Inizio sessione
+git checkout develop
+git pull origin develop
+git checkout -b alessio/nome-feature
+
+# Durante il lavoro (ripeti spesso)
+git add backend/
+git commit -m "feat: descrizione"
+
+# Fine sessione — push e PR
+git push origin alessio/nome-feature
+# Poi vai su github.com/AlessioSerreli/AI-Consulting-for-PMI
+# → "Compare & pull request" → base: develop → crea PR → chiedi a Luigi di approvare
+```
+
+### LUIGI (Frontend — cartella `frontend/`)
+
+```bash
+# Inizio sessione
+git checkout develop
+git pull origin develop
+git checkout -b luigi/nome-feature
+
+# Durante il lavoro (ripeti spesso)
+git add frontend/
+git commit -m "feat: descrizione"
+
+# Fine sessione — push e PR
+git push origin luigi/nome-feature
+# Poi vai su github.com/AlessioSerreli/AI-Consulting-for-PMI
+# → "Compare & pull request" → base: develop → crea PR → chiedi ad Alessio di approvare
+```
+
+### Approvare una PR (entrambi)
+1. Vai su github.com/AlessioSerreli/AI-Consulting-for-PMI → tab **Pull Requests**
+2. Apri la PR dell'altro
+3. Clicca **"Add your review"** → **"Approve"** → **"Submit review"**
+4. Clicca **"Merge pull request"**
+
+### Sincronizzarsi dopo un merge
+```bash
+git checkout develop
+git pull origin develop
+```
+
 ## Punto di ripresa (prossima sessione)
 Il flusso end-to-end funziona completamente. Prossimi step:
 
