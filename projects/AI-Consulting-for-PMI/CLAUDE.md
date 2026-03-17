@@ -25,9 +25,68 @@ MVP Fase 1: Survey dinamica + Scorecard AI generata + CRM admin.
 - [x] BLOCCO 3d — Hunter.io Enrichment: email e decision maker automatici per ogni lead
 - [x] BLOCCO 3e — DDG Enrichment + Outreach: scraping email via sito/DuckDuckGo, email outreach personalizzata con link survey pre-compilata
 - [x] BLOCCO 3f — Clients Page interattiva: selector fasi, note, PDF, valore contratto + teaser email scorecard
+- [x] BLOCCO 3g — Manual Lead Entry + Outreach→Pipeline: inserimento lead manuale + auto-insert in CRM al primo outreach
 - [ ] BLOCCO 4 — Core AI Engine (post-MVP)
 
-## Ultimo avanzamento (2026-03-16) — Clients Page interattiva + Teaser Email + Code Review ✅
+## Ultimo avanzamento (2026-03-17) — Deploy setup + Calendly + Decisioni brand ✅
+
+### Fatto in questa sessione
+
+#### Decisioni prese
+- **Calendly**: creato account condiviso `aiconsultingpmi@gmail.com` → link reale `https://calendly.com/aiconsultingpmi/30min`
+- **Brand**: confermato "AI.PMI" (già presente nel frontend)
+- **Lingua survey**: solo italiano
+- **Migrazione Supabase**: confermata eseguita — colonna `project_phase` presente in `leads`
+
+#### Link Calendly aggiornato in tutti i file
+- `backend/email_templates/confirmation.html`
+- `backend/routes/survey.py` (2 occorrenze)
+- `backend/pdf/generator.py`
+- `frontend/app/thank-you/page.tsx`
+
+#### Deploy Railway — in corso ⚙️
+- Progetto Railway creato: `df3c05e9-78c3-4182-89db-3e4089a92c92`
+- Root directory impostata su `backend/`
+- Start command: `python -m uvicorn main:app --host 0.0.0.0 --port $PORT`
+- Variabili d'ambiente configurate su Railway (tutte le 7 chiavi)
+- Creato `backend/nixpacks.toml` con dipendenze sistema per cairo/pango/weasyprint
+- **Deploy ancora fallito** — errore da investigare alla prossima sessione (pycairo/cairo build error)
+
+#### Prossimo tentativo deploy
+Il `nixpacks.toml` è stato pushato ma il deploy non ha ancora avuto successo.
+Alla prossima sessione: controllare log Railway e risolvere il build error.
+
+---
+
+## Storico sessione precedente (2026-03-16) — Manual Lead Entry + Outreach→Pipeline ✅
+
+### Fatto in questa sessione
+
+#### BLOCCO 3g — Manual Lead Entry + Outreach → Pipeline CRM
+
+**`backend/routes/prospecting.py`**
+- Nuovo modello `ManualLeadCreate` (company_name + owner_email obbligatori, resto opzionale)
+- Nuovo endpoint `POST /prospecting/leads` — inserisce lead manuale con `source='manual'`, `status='new'`
+- `_send_outreach_impl`: dopo invio email outreach, inserisce automaticamente il lead in `leads` (Pipeline CRM)
+- Check anti-duplicato per email: se già presente in pipeline, risponde con `already_in_pipeline: true` (non inserisce di nuovo)
+
+**`backend/main.py`**
+- CORS: aggiunte porte 3003, 3004, 3005 per sviluppo locale (Next.js scala porta se occupata)
+
+**`frontend/app/admin/prospecting/page.tsx`**
+- Pulsante "+ Aggiungi lead manuale" nella toolbar (toggle, si illumina quando aperto)
+- Form espandibile con campi: Azienda\*, Email\*, Nome referente, Città, Telefono, Sito web, Categoria
+- Campi opzionali vuoti omessi dal payload (no stringhe vuote in DB)
+- Feedback errore se il salvataggio fallisce
+- Badge "Manuale" grigio sotto il nome azienda per lead con `source === 'manual'`
+- Popup "Lead già in pipeline" se l'outreach trova l'email già presente nella Pipeline
+
+#### Migrazione Supabase eseguita in sessione precedente
+```sql
+ALTER TABLE prospecting_leads ADD COLUMN IF NOT EXISTS source text DEFAULT 'scraping';
+```
+
+### Note importanti porta backend
 
 ### Fatto in questa sessione
 
@@ -359,19 +418,26 @@ git pull origin main
 ---
 
 ## Punto di ripresa (prossima sessione)
-Il flusso end-to-end funziona completamente: prospecting → enrichment → outreach → survey → scorecard + teaser email → CRM (clients page interattiva con fasi, note, PDF, valore contratto).
+
+### Stato attuale
+- ✅ Migrazione Supabase `project_phase` eseguita
+- ✅ Calendly link reale: `https://calendly.com/aiconsultingpmi/30min` (aggiornato in tutti i file)
+- ✅ Brand: "AI.PMI" confermato
+- ✅ Lingua: italiano
+- ⚙️ Deploy Railway backend: progetto creato, variabili configurate, `nixpacks.toml` aggiunto — **build ancora fallisce**
 
 ### Azione immediata richiesta
-**Eseguire la migrazione Supabase** (1 riga SQL) per attivare il campo `project_phase` sui clienti:
-```sql
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS project_phase text DEFAULT 'audit';
-```
+**Risolvere il build error su Railway** — il deploy del backend fallisce per errore cairo/pycairo.
+Incollare il log aggiornato e investigare la causa. Potrebbe servire:
+- Aggiornare `nixpacks.toml` con dipendenze diverse
+- Rimuovere `xhtml2pdf` da `requirements.txt` (su Linux WeasyPrint è sufficiente, xhtml2pdf serve solo su Windows)
 
 ### Prossimi step prioritari
-1. **Deploy**: frontend su Vercel, backend su Railway/Render
-2. **Dominio**: verificare `aiconsultingpmi.it` su Resend → aggiornare `FROM_EMAIL` nel `.env` di produzione
-3. **Calendly**: sostituire il link placeholder in `thank-you/page.tsx` e nelle email con il link reale
-4. **Decisioni da prendere**: nome brand, pricing, lingua survey
+1. **Fix deploy backend** su Railway (risolvere errore cairo/pycairo)
+2. **Deploy frontend** su Vercel (dopo che il backend è up)
+3. **Aggiornare `FRONTEND_URL`** su Railway con URL Vercel reale
+4. **Dominio**: verificare `aiconsultingpmi.it` su Resend → aggiornare `FROM_EMAIL` nel `.env` Railway
+5. **Pricing**: decidere prezzi per le 4 fasi
 
 ## Note operative
 - Avviare backend: `cd backend` poi `python -m uvicorn main:app --port 8002` (usare cmd, non PowerShell)
